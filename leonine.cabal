@@ -1,0 +1,46 @@
+name:                leonine
+version:             0.1.0.0
+synopsis:            An implementation of the roaring bitmaps data structure.
+description:         Please see README.md
+homepage:            http://github.com/thsutton/leonine#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Thomas Sutton
+maintainer:          me@thomas-sutton.id.au
+copyright:           2016 Thomas Sutton
+category:            Data
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+source-repository      HEAD
+  type:                git
+  location:            https://github.com/thsutton/leonine/
+
+library
+  default-language:    Haskell2010
+  hs-source-dirs:      lib
+  exposed-modules:     Data.Leonine
+                     , Data.Leonine.Chunk
+                     , Data.Leonine.Dense
+                     , Data.Leonine.Sparse
+  build-depends:       base >= 4.7 && <5
+                     , vector
+                     , vector-algorithms
+
+executable leonine
+  default-language:    Haskell2010
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  build-depends:       base
+                     , leonine
+
+test-suite doctests
+  default-language:    Haskell2010
+  hs-source-dirs:      test
+  type:                exitcode-stdio-1.0
+  ghc-options:         -threaded
+  main-is:             doctests.hs
+  build-depends:       base
+                     , QuickCheck
+                     , doctest >= 0.9
