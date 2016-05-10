@@ -1,6 +1,6 @@
 name:                leonine
 version:             0.1.0.0
-synopsis:            An implementation of the roaring bitmaps data structure.
+synopsis:            An implementation of the Roaring Bitmaps data structure.
 description:         Please see README.md
 homepage:            http://github.com/thsutton/leonine#readme
 license:             BSD3
@@ -20,20 +20,19 @@ source-repository      HEAD
 library
   default-language:    Haskell2010
   hs-source-dirs:      lib
-  exposed-modules:     Data.Leonine
-                     , Data.Leonine.Chunk
+  exposed-modules:     Data.Leonine.Sparse
                      , Data.Leonine.Dense
-                     , Data.Leonine.Sparse
   build-depends:       base >= 4.7 && <5
                      , vector
                      , vector-algorithms
 
-executable leonine
+test-suite             check-hlint
   default-language:    Haskell2010
-  hs-source-dirs:      src
-  main-is:             Main.hs
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             check-hlint.hs
   build-depends:       base
-                     , leonine
+                     , hlint
 
 test-suite doctests
   default-language:    Haskell2010
