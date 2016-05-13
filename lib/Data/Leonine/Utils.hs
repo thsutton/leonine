@@ -71,17 +71,17 @@ searchBoundsOn index v ix = loop
 -- The supplied function can insert, modify, or delete the element
 -- which corresponds to the supplied index:
 --
--- >>> modify fst 'c' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (fmap (fmap (10+)))
+-- >>> Data.Vector.toList $ modify fst 'c' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (fmap (fmap (10+)))
 -- [('a',1),('c',13),('d',4)]
 --
--- >>> modify fst 'b' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const $ Just ('b',9))
+-- >>> Data.Vector.toList $ modify fst 'b' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const $ Just ('b',9))
 -- [('a',1),('b',9),('c',3),('d',4)]
 --
--- >>> modify fst 'a' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
+-- >>> Data.Vector.toList $ modify fst 'a' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
 -- [('c',3),('d',4)]
--- >>> modify fst 'c' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
+-- >>> Data.Vector.toList $ modify fst 'c' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
 -- [('a',1),('d',4)]
--- >>> modify fst 'd' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
+-- >>> Data.Vector.toList $ modify fst 'd' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
 -- [('a',1),('c',3)]
 --
 -- >>> modify fst 'b' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
