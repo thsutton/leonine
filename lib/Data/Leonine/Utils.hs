@@ -85,11 +85,11 @@ searchBoundsOn index v ix = loop
 -- >>> Data.Vector.toList $ modify fst 'd' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
 -- [('a',1),('c',3)]
 --
--- >>> modify fst 'b' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
+-- >>> Data.Vector.toList $ modify fst 'b' (Data.Vector.fromList [('a',1),('c',3),('d',4)]) (const Nothing)
 -- [('a',1),('c',3),('d',4)]
 modify :: (Ord b, Vector v a)
        => (a -> b) -- ^ Index an element.
-       -> b -- ^ The index to search for.
+       -> b -- ^ The index to modify.
        -> v a -- ^ The vector to modify.
        -> (Maybe a -> Maybe a)
        -> v a
