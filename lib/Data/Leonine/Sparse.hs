@@ -9,11 +9,14 @@ module Data.Leonine.Sparse (
 ) where
 
 import qualified Data.List                        as L
+import           Data.Maybe                       (isJust)
 import           Data.Monoid
 import qualified Data.Vector.Algorithms.Insertion as VA
 import           Data.Vector.Unboxed              (Vector)
 import qualified Data.Vector.Unboxed              as V
 import           Data.Word
+
+import Data.Leonine.Utils
 
 -- $setup
 -- >>> :set -XScopedTypeVariables
@@ -23,23 +26,19 @@ import           Data.Word
 -- >>> instance Arbitrary Chunk where arbitrary = Chunk . V.fromList . L.nub . L.sort <$> arbitrary
 -- >>> instance (V.Unbox a, Ord a, Arbitrary a) => Arbitrary (Vector a) where arbitrary = V.fromList<$> arbitrary
 
--- | A bit in a bitmap.
-type Bit = Word16
-
 -- | A bitmap of 2^16 bits.
 newtype Chunk = Chunk { sparse :: Vector Bit }
   deriving (Show, Eq, Ord)
 
 instance Monoid Chunk where
     mempty = Chunk (V.empty)
-
     (Chunk as) `mappend` (Chunk bs) = Chunk (v_merge as bs)
 
 -- * Queries
 
 -- | Check whether a 'Bit' is set in a 'Chunk'.
 test :: Chunk -> Bit -> Bool
-test (Chunk bs) b = bs `v_elem` b
+test (Chunk bs) b = isJust (search id b bs)
 
 -- | Population count
 --
@@ -68,7 +67,7 @@ clear c@(Chunk bs) b
 
 -- | Test whether an element occurs in a sorted vector.
 v_elem :: (V.Unbox a, Ord a) => Vector a -> a -> Bool
-v_elem bs b = V.elem b bs
+v_elem bs b = isJust (search id b bs)
 
 -- | Insert an element into a sorted vector.
 --

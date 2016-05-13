@@ -8,6 +8,8 @@ import qualified Data.Vector.Unboxed              as V
 import qualified Data.Vector.Unboxed.Mutable      as V (read, write)
 import           Data.Word
 
+import Data.Leonine.Utils
+
 -- $setup
 -- >>> :set -XScopedTypeVariables
 -- >>> import Control.Applicative
@@ -15,9 +17,6 @@ import           Data.Word
 -- >>> import qualified Data.List as L
 -- >>> instance Arbitrary Chunk where arbitrary = foldl set mempty . L.nub . L.sort <$> arbitrary
 -- >>> instance (V.Unbox a, Ord a, Arbitrary a) => Arbitrary (Vector a) where arbitrary = V.fromList<$> arbitrary
-
--- | The identifier of a single bit in a 'Chunk'.
-type Bit = Word16
 
 -- | A bitmap of 2^16 bits.
 --
