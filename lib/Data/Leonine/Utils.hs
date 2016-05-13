@@ -1,15 +1,16 @@
-{-# LANGUAGE BangPatterns, ScopedTypeVariables #-}
+{-# LANGUAGE BangPatterns          #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 module Data.Leonine.Utils where
 
-import Data.Function (on)
 import           Data.Bits
+import           Data.Either                 (either)
+import           Data.Function               (on)
 import           Data.Monoid
-import Data.Either (either)
-import           Data.Vector.Generic           (Vector)
-import qualified Data.Vector.Generic           as V
-import qualified Data.Vector.Generic.Mutable   as V (write)
-import qualified Data.Vector.Algorithms.Heap   as VA
-import qualified Data.Vector.Algorithms.Search as VS
+import qualified Data.Vector.Algorithms.Heap as VA
+import           Data.Vector.Generic         (Vector)
+import qualified Data.Vector.Generic         as V
+import qualified Data.Vector.Generic.Mutable as V (write)
 import           Data.Word
 
 -- * Words
@@ -35,11 +36,11 @@ splitWord w = ( fromIntegral $ (w .&. 0xFFFF0000) `shiftR` 16
 --
 -- >>> search length 3 (Data.Vector.fromList ["","-","---","-----"])
 -- Just "---"
+-- >>> search length 2 (Data.Vector.fromList ["","-","---","-----"])
+-- Nothing
 search :: (Ord ix, Vector v a) => (a -> ix) -> ix -> v a -> Maybe a
 search index ix v =
-  case searchBoundsOn index v ix 0 (V.length v) of
-    Right (e, _) -> Just e
-    Left _     -> Nothing
+  either (const Nothing) (Just . fst) (searchBoundsOn index v ix 0 (V.length v))
 
 -- | Search a 'Vector', sorted according to some index, within the bounds [l,u].
 --
@@ -93,12 +94,15 @@ modify :: (Ord b, Vector v a)
        -> (Maybe a -> Maybe a)
        -> v a
 modify index ix v f =
-    let r = searchBoundsOn index v ix 0 (V.length v)
-    in go r (f (either (const Nothing) (Just . fst) r))
+    let r = searchBoundsOn index v ix 0 len
+    in go r
   where
     cmp = compare `on` index
-    go (Left _) Nothing = v
-    go (Left _) (Just e') = V.modify (VA.sortBy cmp) (e' `V.cons` v) -- insert
-    go (Right (_,i)) Nothing = (V.slice 0 i v) V.++ let i' = i + 1 in (V.slice i' (V.length v - i') v)
-    go (Right (_,i)) (Just e') = V.modify (\v -> V.write v i e') v
-
+    len = V.length v
+    go (Left i) = case f Nothing of
+      Just e' -> V.modify (VA.sortBy cmp) (e' `V.cons` v)
+      Nothing -> v
+    go (Right (r,i)) = case f (Just r) of
+      Just e' -> V.modify (\v -> V.write v i e') v
+      Nothing -> let i' = i + 1
+                in (V.slice 0 i v) V.++ (V.slice i' (len - i') v)
