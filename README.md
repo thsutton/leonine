@@ -9,6 +9,9 @@ more information about *leonine* see the [documentation][3] or refer
 to the [Roaring Bitmaps][2] web-site for other implementations and
 publications about the data structure.
 
+**Please note:** This is a work in progress and is not yet ready for
+use. When complete it will be released on Hackage.
+
 Structure
 ---------
 
