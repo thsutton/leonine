@@ -83,7 +83,7 @@ v_insert bs b = v_sort (V.cons b bs)
 
 -- | Remove an element from a vector.
 --
--- prop> \(bs, b::Word16) -> not (v_elem (v_remove bs b) b) || (v_elem bs b)
+-- prop> \(Chunk bs, b::Word16) -> not (v_elem (v_remove bs b) b) || (v_elem bs b)
 -- prop> \(Chunk bs, b) -> v_remove (v_insert bs b) b == bs
 v_remove :: (V.Unbox a, Ord a) => Vector a -> a -> Vector a
 v_remove bs b =
