@@ -4,6 +4,8 @@ module Data.Leonine.Sparse (
     test,
     set,
     clear,
+    bits,
+    pop,
     -- Internal functions
     v_elem, v_insert, v_sort
 ) where
@@ -62,6 +64,9 @@ clear :: Chunk -> Bit -> Chunk
 clear c@(Chunk bs) b
     | bs `v_elem` b = Chunk(bs `v_remove` b)
     | otherwise     = c
+
+bits :: Chunk -> [Bit]
+bits = V.toList . sparse
 
 -- * Helpers functions
 
