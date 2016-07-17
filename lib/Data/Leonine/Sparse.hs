@@ -28,13 +28,16 @@ import Data.Leonine.Utils
 -- >>> instance Arbitrary Chunk where arbitrary = Chunk . V.fromList . L.nub . L.sort <$> arbitrary
 -- >>> instance (V.Unbox a, Ord a, Arbitrary a) => Arbitrary (Vector a) where arbitrary = V.fromList<$> arbitrary
 
--- | A bitmap of 2^16 bits.
+-- | A sparse bitmap of 2^16 bits.
+--
+-- The representation is an unboxed vector of unique 16-bit words
+-- stored in ascending order.
 newtype Chunk = Chunk { sparse :: Vector Bit }
   deriving (Show, Eq, Ord)
 
 instance Monoid Chunk where
     mempty = Chunk (V.empty)
-    (Chunk as) `mappend` (Chunk bs) = Chunk (v_merge as bs)
+    (Chunk as) `mappend` (Chunk bs) = Chunk (merge as bs)
 
 -- * Queries
 
@@ -76,37 +79,7 @@ v_elem bs b = isJust (search id b bs)
 
 -- | Insert an element into a sorted vector.
 --
--- prop> \(Chunk bs, b) -> v_elem (v_insert bs b) b
--- prop> \(Chunk bs, b) -> v_sort (v_insert bs b) == (v_insert bs b)
+-- prop> \(inp :: Vector Int, b) -> let bs = v_sort inp in v_elem (v_insert bs b) b
+-- prop> \(inp :: Vector Int, b) -> let bs = v_sort inp in v_sort (v_insert bs b) == (v_insert bs b)
 v_insert :: (V.Unbox a, Ord a) => Vector a -> a -> Vector a
 v_insert bs b = v_sort (V.cons b bs)
-
--- | Remove an element from a vector.
---
--- prop> \(Chunk bs, b::Word16) -> not (v_elem (v_remove bs b) b) || (v_elem bs b)
--- prop> \(Chunk bs, b) -> v_remove (v_insert bs b) b == bs
-v_remove :: (V.Unbox a, Ord a) => Vector a -> a -> Vector a
-v_remove bs b =
-    let (h,t) = V.break (== b) bs
-    in if V.null t then h else h V.++ (V.tail t)
-
--- | Sort the elements of a vector.
---
--- prop> \(bs :: Vector Bit) -> V.toList (v_sort bs) == L.sort (V.toList bs)
-v_sort :: (V.Unbox a, Ord a) => Vector a -> Vector a
-v_sort = V.modify VA.sort
-
--- | Merge two sorted arrays.
-v_merge :: (V.Unbox a, Ord a) => Vector a -> Vector a -> Vector a
-v_merge as bs
-    | V.null as = bs
-    | V.null bs = as
-    | otherwise =
-        let a   = V.head as
-            as' = V.tail as
-            b   = V.head bs
-            bs' = V.tail bs
-        in case compare a b of
-             LT -> V.cons a (V.cons b (v_merge as' bs'))
-             EQ -> V.cons a (v_merge as' bs')
-             GT -> V.cons b (V.cons a (v_merge as' bs'))

@@ -4,6 +4,7 @@
 module Data.Leonine.Utils where
 
 import           Data.Bits
+import           Data.Convertible
 import           Data.Either                 (either)
 import           Data.Function               (on)
 import           Data.Monoid
@@ -38,6 +39,17 @@ splitWord w = ( fromIntegral $ (w .&. 0xFFFF0000) `shiftR` 16
               , fromIntegral $  w .&. 0xFFFF
               )
 
+-- | Join a 'Chunk' 'Index' and 'Bit' into a 'Word32'.
+--
+-- >>> joinWord 0 15
+-- 15
+-- >>> joinWord 1 0
+-- 65536
+-- >>> joinWord 15 61440
+-- 1044480
+joinWord :: Index -> Bit -> Word32
+joinWord i b = (convert i `shiftL` 16) + convert b
+
 -- * Vectors
 
 -- | Search a 'Vector', sorted according to some index type 'b'.
@@ -49,6 +61,12 @@ splitWord w = ( fromIntegral $ (w .&. 0xFFFF0000) `shiftR` 16
 search :: (Ord ix, Vector v a) => (a -> ix) -> ix -> v a -> Maybe a
 search index ix v =
   either (const Nothing) (Just . fst) (searchBoundsOn index v ix 0 (V.length v))
+
+-- | Search a 'Vector', sorted according to some index.
+--
+-- Return the value and position if present, or the position it would be in.
+searchIndex :: (Ord ix, Vector v a) => (a -> ix) -> ix -> v a -> Either Int (a, Int)
+searchIndex index ix v = searchBoundsOn index v ix 0 (V.length v)
 
 -- | Search a 'Vector', sorted according to some index, within the bounds [l,u].
 --
@@ -115,6 +133,10 @@ modify index ix v f =
       Nothing -> let i' = i + 1
                 in (V.slice 0 i v) V.++ (V.slice i' (len - i') v)
 
+-- | Merge two sorted vectors.
+merge :: (Ord a, Vector v a) => v a -> v a -> v a
+merge as bs = mergeWith id const as bs
+
 -- | Merge two 'Vector's, sorted according to some index type 'b'.
 --
 -- Elements with the same index 'b' will be merged with the supplied function.
@@ -140,3 +162,13 @@ mergeWith index merge = loop
                             LT -> e1 `V.cons` loop (V.tail v1) v2
                             EQ -> (merge e1 e2) `V.cons` loop (V.tail v1) (V.tail v2)
                             GT -> e2 `V.cons` loop v1 (V.tail v2)
+
+-- | Sort the elements of a vector.
+v_sort :: (Ord a, Vector v a) => v a -> v a
+v_sort = V.modify VA.sort
+
+-- | Remove an element from a vector.
+v_remove :: (Ord a, Vector v a) => v a -> a -> v a
+v_remove bs b =
+    let (h,t) = V.break (== b) bs
+    in if V.null t then h else h V.++ (V.tail t)
